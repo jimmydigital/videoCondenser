@@ -38,11 +38,13 @@ def process_file(file, mtime):
     jfile.close()
 
     out = concatenate_videoclips(clips, padding=-.5, method="compose")
+    smaller = out.resize(height=120)
     outfilename = "{}/{}.mp4".format(outDir, timestamp)
 
     out.write_videofile(outfilename)
-    smaller = out.clip.resize(height=120)
-    smaller.write_gif("{}.gif".format(outfilename),fps=5)
+    #smaller.write_gif("{}.gif".format(outfilename),fps=5)
+    smaller.write_videofile("{}.webm".format(outfilename),fps=5)
+
     del smaller
     del out
     del clip
@@ -50,19 +52,19 @@ def process_file(file, mtime):
 
 if __name__ == "__main__":
 
-    if len(sys.argv >= 2):
+    if len(sys.argv) >= 2:
         s = os.stat(sys.argv[1])
-        process_file(sys.argv[1])
-
-    if os.path.isdir(baseDir):
-        for root, dirs, files in os.walk(baseDir):
-            if "Trashes" in root: continue
-            for file in files:
-                if "Trashes" in root: continue
-                if file.endswith(".MP4"):
-                    s = os.stat(os.path.join(root, file))
-                    print "{} {}".format(root, file)
-                    process_file(os.path.join(root, file), s[ST_MTIME])
+        process_file(sys.argv[1], s[ST_MTIME])
     else:
-        print "Input directory {} does not exist. Not mounted?".format(baseDir)
-        sys.exit(1)
+        if os.path.isdir(baseDir):
+            for root, dirs, files in os.walk(baseDir):
+                if "Trashes" in root: continue
+                for file in files:
+                    if "Trashes" in root: continue
+                    if file.endswith(".MP4"):
+                        s = os.stat(os.path.join(root, file))
+                        print "{} {}".format(root, file)
+                        process_file(os.path.join(root, file), s[ST_MTIME])
+        else:
+            print "Input directory {} does not exist. Not mounted?".format(baseDir)
+            sys.exit(1)
