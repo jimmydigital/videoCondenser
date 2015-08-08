@@ -26,25 +26,33 @@ def process_file(file, mtime):
 
 
     timestamp = datetime.datetime.fromtimestamp(int(s[ST_MTIME])).strftime('%Y%m%d-%H%M%S')
-    
+
     meta["starttime"] = int(mtime - clip.duration)
     meta["endtime"]   = int(mtime)
     meta["duration"]  = int(clip.duration)
     meta["segments"]  = segments
     meta["mediaurl"]  = ""
-    
+
     jfile = open("{}/{}.json".format(outDir,timestamp), "w")
     json.dump(meta, jfile)
     jfile.close()
 
     out = concatenate_videoclips(clips, padding=-.5, method="compose")
-    outfilename = "{}/{}.mp4".format(outDir, timestamp)    
+    outfilename = "{}/{}.mp4".format(outDir, timestamp)
+
     out.write_videofile(outfilename)
+    smaller = out.clip.resize(height=120)
+    smaller.write_gif("{}.gif".format(outfilename),fps=5)
+    del smaller
     del out
     del clip
 
- 
+
 if __name__ == "__main__":
+
+    if len(sys.argv >= 2):
+        s = os.stat(sys.argv[1])
+        process_file(sys.argv[1])
 
     if os.path.isdir(baseDir):
         for root, dirs, files in os.walk(baseDir):
@@ -58,5 +66,3 @@ if __name__ == "__main__":
     else:
         print "Input directory {} does not exist. Not mounted?".format(baseDir)
         sys.exit(1)
-
-
