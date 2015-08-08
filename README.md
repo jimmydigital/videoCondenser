@@ -5,7 +5,7 @@ In my case this is used for post processing helmet cam video.
 
 Example output:
 
-<video id="sampleMovie" src="https://github.com/jimmydigital/videoCondenser/blob/master/images/ted_rosling_third_world_stats.mp4.webm" controls></video>
+![Example Thumbnail Video](/images/ted_rosling_third_world_stats.mp4.gif?raw=true "Example Thumbnail Video")
 
 ```
 /Volumes/CNTR_ROAM3/DCIM/108MEDIA FILE0125.MP4
