@@ -7,13 +7,14 @@ import os, sys
 import stat
 import json
 from stat import *
+from multiprocessing.pool import Pool
 
 baseDir = "/Volumes/CNTR_ROAM3"
 outDir = "output"
 
-def process_file(file, mtime):
+def process_file(e):
 
-    clip = VideoFileClip(file)
+    clip = VideoFileClip(e['file'])
     clips = []
     meta = {}
     segments = 0
@@ -25,10 +26,10 @@ def process_file(file, mtime):
         segments += 1
 
 
-    timestamp = datetime.datetime.fromtimestamp(int(s[ST_MTIME])).strftime('%Y%m%d-%H%M%S')
+    timestamp = datetime.datetime.fromtimestamp(int(e['mtime'])).strftime('%Y%m%d-%H%M%S')
 
-    meta["starttime"] = int(mtime - clip.duration)
-    meta["endtime"]   = int(mtime)
+    meta["starttime"] = int(e['mtime'] - clip.duration)
+    meta["endtime"]   = int(e['mtime'])
     meta["duration"]  = int(clip.duration)
     meta["segments"]  = segments
     meta["mediaurl"]  = ""
@@ -52,6 +53,8 @@ def process_file(file, mtime):
 
 if __name__ == "__main__":
 
+    filesToProcess = []
+
     if len(sys.argv) >= 2:
         s = os.stat(sys.argv[1])
         process_file(sys.argv[1], s[ST_MTIME])
@@ -63,8 +66,15 @@ if __name__ == "__main__":
                     if "Trashes" in root: continue
                     if file.endswith(".MP4"):
                         s = os.stat(os.path.join(root, file))
-                        print "{} {}".format(root, file)
-                        process_file(os.path.join(root, file), s[ST_MTIME])
+                        #print "{} {}".format(root, file)
+                        entry = { 'file': os.path.join(root, file), 'mtime': s[ST_MTIME] }
+                        filesToProcess.append(entry)
+                        #process_file(os.path.join(root, file), s[ST_MTIME])
         else:
             print "Input directory {} does not exist. Not mounted?".format(baseDir)
             sys.exit(1)
+
+        p = Pool(2)
+        p.map(process_file, filesToProcess)
+
+
